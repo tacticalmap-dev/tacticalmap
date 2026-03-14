@@ -14,30 +14,24 @@ public class WaypointSyncPacket {
     public enum Action { ADD, DELETE }
     private final Action action;
     private final String name;
-    private final int x, y, z;
+    private final BlockPos pos;
 
     public WaypointSyncPacket(Waypoint wp, Action action) {
         this.action = action;
         this.name = wp.getName();
-        this.x = wp.getPos().getX();
-        this.y = wp.getPos().getY();
-        this.z = wp.getPos().getZ();
+        this.pos = wp.getPos();
     }
 
     public WaypointSyncPacket(FriendlyByteBuf buf) {
         this.action = buf.readEnum(Action.class);
         this.name = buf.readUtf();
-        this.x = buf.readInt();
-        this.y = buf.readInt();
-        this.z = buf.readInt();
+        this.pos = buf.readBlockPos();
     }
 
     public void encode(FriendlyByteBuf buf) {
         buf.writeEnum(action);
         buf.writeUtf(name);
-        buf.writeInt(x);
-        buf.writeInt(y);
-        buf.writeInt(z);
+        buf.writeBlockPos(pos);
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
@@ -53,10 +47,10 @@ public class WaypointSyncPacket {
                     TacticalMap.IS_SYNCING.set(true);
                     try {
                         if (this.action == Action.ADD) {
-                            manager.addWaypointAt(new BlockPos(x, y, z), name);
+                            manager.addWaypointAt(this.pos, this.name);
                         } else {
                             manager.getAllWaypoints().stream()
-                                    .filter(wp -> wp.getPos().getX() == x && wp.getPos().getZ() == z)
+                                    .filter(wp -> wp.getPos().atY(0).equals(this.pos.atY(0)))
                                     .findFirst()
                                     .ifPresent(manager::removeWaypoint);
                         }
