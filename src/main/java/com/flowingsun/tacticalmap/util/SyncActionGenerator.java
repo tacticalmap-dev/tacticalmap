@@ -11,12 +11,12 @@ public class SyncActionGenerator {
     private static final int DATA_COUNTER_MASK = (1 << DATA_COUNTER_BITS) - 1;
     public static final int TOTAL_MASK = (1 << TOTAL_BITS) - 1;
 
-    @Deprecated
+    @Deprecated(since = "protocol-1.0.0")
     public static byte generate(SyncAction syncAction) {
         return generate(syncAction, SideFlag.UNDEFINED, DataCounter.SINGLE);
     }
 
-    @Deprecated
+    @Deprecated(since = "protocol-1.0.3")
     public static byte generate(SyncAction syncAction, SideFlag sideFlag) {
         return generate(syncAction, sideFlag, DataCounter.SINGLE);
     }
