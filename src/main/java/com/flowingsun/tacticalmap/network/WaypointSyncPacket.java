@@ -15,7 +15,8 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 /* class update plan
- * 1. Use BitSet instead of long to send data
+ * 1. Provide a way to allow multi sync to one player so that the data could be able to force synced to all players
+ * 2. Use BitSet instead of long to send data (primer)
  */
 public class WaypointSyncPacket {
     private static final int ACTION_BITS = SyncActionGenerator.TOTAL_BITS;

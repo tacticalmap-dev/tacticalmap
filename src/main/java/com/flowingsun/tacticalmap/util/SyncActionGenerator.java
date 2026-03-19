@@ -3,19 +3,26 @@ package com.flowingsun.tacticalmap.util;
 public class SyncActionGenerator {
     private static final int SYNC_ACTION_BITS = calculateBits(SyncAction.values().length);
     private static final int SIDE_FLAG_BITS = calculateBits(SideFlag.values().length);
-    public static final int TOTAL_BITS = SYNC_ACTION_BITS + SIDE_FLAG_BITS;
+    private static final int DATA_COUNTER_BITS = calculateBits(DataCounter.values().length);
+    public static final int TOTAL_BITS = SYNC_ACTION_BITS + SIDE_FLAG_BITS + DATA_COUNTER_BITS;
 
     private static final int SYNC_ACTION_MASK = (1 << SYNC_ACTION_BITS) - 1;
     private static final int SIDE_FLAG_MASK = (1 << SIDE_FLAG_BITS) - 1;
+    private static final int DATA_COUNTER_MASK = (1 << DATA_COUNTER_BITS) - 1;
     public static final int TOTAL_MASK = (1 << TOTAL_BITS) - 1;
 
     @Deprecated
     public static byte generate(SyncAction syncAction) {
-        return generate(syncAction, SideFlag.UNDEFINED);
+        return generate(syncAction, SideFlag.UNDEFINED, DataCounter.SINGLE);
     }
 
+    @Deprecated
     public static byte generate(SyncAction syncAction, SideFlag sideFlag) {
-        return (byte) ((syncAction.ordinal() & SYNC_ACTION_MASK) | (sideFlag.ordinal() & SIDE_FLAG_MASK) << SYNC_ACTION_BITS);
+        return generate(syncAction, sideFlag, DataCounter.SINGLE);
+    }
+
+    public static byte generate(SyncAction syncAction, SideFlag sideFlag, DataCounter counter) {
+        return (byte) ((syncAction.ordinal() & SYNC_ACTION_MASK) | (sideFlag.ordinal() & SIDE_FLAG_MASK) << SYNC_ACTION_BITS | (counter.ordinal() & DATA_COUNTER_MASK) << (SYNC_ACTION_BITS + SIDE_FLAG_BITS));
     }
 
     public static SyncAction getSyncAction(Byte syncAction) {
@@ -34,6 +41,14 @@ public class SyncActionGenerator {
         return SideFlag.values()[index];
     }
 
+    public static DataCounter getDataCounter(Byte syncAction) {
+        int index = (syncAction >> (SYNC_ACTION_BITS + SIDE_FLAG_BITS)) & DATA_COUNTER_MASK;
+        if (index >= DataCounter.values().length) {
+            throw new IllegalArgumentException("Invalid DataCounter index: " + index);
+        }
+        return DataCounter.values()[index];
+    }
+
     private static int calculateBits(int count) {
         if (count <= 0) {
             return 0;
@@ -50,5 +65,10 @@ public class SyncActionGenerator {
         C2S,
         S2C,
         UNDEFINED
+    }
+
+    public enum DataCounter {
+        SINGLE,
+        MULTI
     }
 }
